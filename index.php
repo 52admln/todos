@@ -36,25 +36,14 @@ session_start();
 				<strong>0</strong> item left
 			</span>
 			<ul class="filters">
-				<li><a href="#/all" class="selected">All</a></li>
-				<li><a href="#/active">Active</a></li>
-				<li><a href="#/completed">Completed</a></li>
+				<li><a href="#" class="selected" data-status="all">All</a></li>
+				<li><a href="#" data-status="active">Active</a></li>
+				<li><a href="#" data-status="completed">Completed</a></li>
 			</ul>
-            
-			<button class="clear-completed" style="display: none;">
+
+			<button class="clear-completed">
 				Clear completed
 			</button>
-            <span class="todo-user">
-				<strong>
-                    <?php
-                    if (isset($_SESSION['valid_user'])) {
-                        echo $_SESSION['valid_user'];
-                    } else {
-                        echo "not login";
-                    }
-                    ?>
-            </strong>
-			</span>
 		</footer>
 
         </section>

@@ -1,3 +1,3 @@
 <?php
 
-require 'dbx_connect.php';
+require 'db_connect.php';

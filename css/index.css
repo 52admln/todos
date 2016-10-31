@@ -168,6 +168,42 @@ body {
 .todo-list li .edit {
     display: none;
 }
+.view {
+	display: block;
+}
+.edit {
+	position: relative;
+	margin: 0;
+	width: 100%;
+	font-size: 24px;
+	font-family: inherit;
+	font-weight: inherit;
+	line-height: 1.4em;
+	border: 0;
+	outline: none;
+	color: inherit;
+	padding: 6px;
+	border: 1px solid #999;
+	box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);
+	box-sizing: border-box;
+	-webkit-font-smoothing: antialiased;
+	-moz-font-smoothing: antialiased;
+	font-smoothing: antialiased;
+}
+.todo-list li.editing {
+	padding: 0;
+}
+
+.todo-list li.editing .edit {
+    display: block;
+    width: 506px;
+    padding: 13px 17px 12px 17px;
+    margin: 0 0 0 43px;
+}
+
+.todo-list li.editing .view {
+	display: none;
+}
 .todo-list li .destroy {
     display: none;
     position: absolute;
@@ -227,13 +263,6 @@ body {
 }
 
 .todo-count strong {
-	font-weight: 300;
-}
-.todo-user {
-    float: right;
-    text-align: right;
-}
-.todo-user strong {
 	font-weight: 300;
 }
 
