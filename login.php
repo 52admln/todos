@@ -33,14 +33,17 @@ function login($username, $password) {
     $query = 'select * from users'
             ." where username='".$username."' "
             ."and password=sha1('".$password."')";
-
     $result = $conn->query($query);
+    $userid = $conn->query('select id from users'
+            ." where username='".$username."' ");
     if(!$result) {
         echo '不能执行SQL语句';
         exit();
     }
     if ($result->num_rows) {
         $_SESSION['valid_user'] = $username;
+        $row = $userid->fetch_assoc();
+        setcookie("userid", $row["id"]);
         $conn->close();
         echo 0;
     } else {

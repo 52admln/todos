@@ -7,6 +7,7 @@ require 'data_validate.php';
 $username = $_POST['username'];
 $password = $_POST['password'];
 $password2 = $_POST['confirm_password'];
+$email = $_POST['email'];
 
 
 if(!filled_out($_POST)) {
@@ -26,16 +27,17 @@ if((strlen($password) < 6) || (strlen($password) > 25)) {
     exit();
 }
 
-register($username, $password);
+register($username, $password, $email);
 
 /**
  * @param $username 用户名
  * @param $password 密码
  *
  */
-function register($username, $password) {
+function register($username, $password, $email) {
     $conn = db_connect();
     $result =  $conn->query("select * from users where username='".$username."'");
+    $email_check = $conn->query("select * from users where email='".$email."'");
     if(!$result) {
         echo '不能执行SQL语句';
         exit();
@@ -44,12 +46,15 @@ function register($username, $password) {
         echo '用户名已被注册，请输入其他用户名。';
         exit();
     }
-    $result = $conn-> query("insert into users(username, password) values ('".$username."', sha1('".$password."'))");
+    if($email_check->num_rows>0) {
+        echo '邮箱已被注册，请输入其他邮箱地址。';
+        exit();
+    }
+    $result = $conn-> query("insert into users(username, password, email) values ('".$username."', sha1('".$password."'), '".$email."')");
     if(!$result) {
         echo '注册时发生错误。';
         exit();
     } else {
-        $_SESSION['valid_user'] = $username;
         $conn->close();
         echo 0;
     }

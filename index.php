@@ -49,6 +49,12 @@ session_start();
         </section>
         <footer class="info">
 			<p>Double-click to edit a todo</p>
+            <p>
+                Logged in as <strong><?php echo $_SESSION['valid_user'] ?></strong>
+            </p>
+            <p>
+                <a href="loginout.php" >Click here to login out</a>
+            </p>
 		</footer>
     </body>
     <script src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>

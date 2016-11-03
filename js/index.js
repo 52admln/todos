@@ -1,5 +1,3 @@
-
-
 // 跨浏览器事件处理
 var EventUtil = {
     addHandler: function(element, type, handler) {
@@ -41,9 +39,28 @@ function toggleClass(obj, cls) {
         addClass(obj, cls);
     }
 }
+// 获取Cookie
+function getCookie(c_name){
+　　　　if (document.cookie.length>0){
+　　　　　　c_start=document.cookie.indexOf(c_name + "=")
+　　　　　　if (c_start!=-1){
+　　　　　　　　c_start=c_start + c_name.length+1
+　　　　　　　　c_end=document.cookie.indexOf(";",c_start)
+　　　　　　　　if (c_end==-1) c_end=document.cookie.length　　
+　　　　　　　　return unescape(document.cookie.substring(c_start,c_end))
+　　　　　　}
+　　　　}
+　　　　return ""
+　　}
 
-
-
+//  返回的数据格式 JSON
+//  [
+//     {
+//         id: 0,
+//         value: "Demo",
+//         completed: false
+//     }
+//  ]
 
 
 var toggle_all = document.querySelector(".toggle-all");
@@ -97,19 +114,37 @@ EventUtil.addHandler(document, 'keyup', function(e) {
             // console.log("pressed not change");
             // TODO
             // 更新 数据
+
+
+
         } else {
             $(e.target.previousElementSibling).find("label").html(e.target.value);
             // console.log("pressed edited");
             var curId = $(e.target.previousElementSibling).find("label").data("id");
             // 更新数据
-            for (var index = 0; index < todoItems.length; index++) {
-                if (todoItems[index].id == curId) {
-                    todoItems[index].todo = e.target.value; // 删除对应的元素
-                    break;
+            $.ajax({
+                type: "POST",
+                url: "alter_items.php",
+                data: {
+                    itemid: curId,
+                    userid: getCookie('userid'),
+                    value: e.target.value
+                },
+                success: function(){
+                    for (var index = 0; index < todoItems.length; index++) {
+                        if (todoItems[index].id == curId) {
+                            todoItems[index].todo = e.target.value; // 更新对应的元素
+                            break;
+                        }
+                    }
+                    console.log(curId,todoItems);
+                },
+                error: function (event,request, settings) {
+                    console.log(event);
+                    console.log(request);
+                    console.log(settings);
                 }
-
-            }
-            console.log(curId,todoItems);
+            });
             toggleClass(e.target.parentElement, "editing");
         }
     }
@@ -156,42 +191,68 @@ clear_ompleted.addEventListener("click", function (e) {
     e.stopPropagation();
 })
 function removeCompleted(delArr) {
-    debugger;
-    for (var index = 0; index < delArr.length; index++) {
-        for(var j=0; j<todoItems.length; j++) {
-            if (todoItems[j].id == delArr[index]) {
-                todoItems.splice(j, 1); // 删除对应的元素
-                console.log("find!");
-            }
+    // debugger;
+    $.ajax({
+        type: "POST",
+        url: "delete_data.php",
+        data: {
+            type: "delComplete",
+            delArr: delArr,
+            userid: getCookie('userid')
+        },
+        success: function(){
+            console.log(1);
+            getDate();
+            renderDate(todoItems);
+        },
+        error: function (event,request, settings) {
+            console.log(event);
+            console.log(request);
+            console.log(settings);
         }
-    }
-    renderDate(todoItems);
+    });
 }
 
 
-// TODO
-// 将不同需求 进行封装
-// 从数据库获取内容，进行渲染
-//  ajax 提交数据请求，返回页面进行渲染
-//  返回的数据格式 JSON
-//  [
-//     {
-//         id: 0,
-//         todo: "Demo",
-//         completed: false
-//     },
-//     {
-//         id: 1,
-//         todo: "Demo",
-//         completed: true
-//     }
-//  ]
-
 var todoItems = []; // 存放用于渲染的数组
-var tempNum = 0; // 临时ID，用于表示不同的项目数据，后续用数据库读取则自动生成
 
+// 从数据库获取数据
 function getDate() {
-
+    $.ajax({
+        type: "POST",
+        url: "get_data.php",
+        data: {
+            userid: getCookie("userid")
+        },
+        dataType: "json",
+        success: function(data){
+            if(data != 0) {
+                todoItems = data;
+                renderDate(todoItems);
+            } else {
+                // TODO
+                //
+                //
+                //
+                // 
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                //
+                todo_list.innerHTML = "";
+            }
+        },
+        error: function (event,request, settings) {
+            console.log(event);
+            console.log(request);
+            console.log(settings);
+        }
+    });
 }
 
 // 筛选数据进行生成
@@ -216,6 +277,9 @@ function filter(type) {
         }
     }
     renderDate(_curItems);
+    removeClass(document.querySelector(".footer"), "hidden");
+    removeClass(toggle_all, "hidden");
+    document.querySelector(".clear-completed").style.display = "block";
 }
 
 
@@ -248,23 +312,50 @@ function countList() {
 function itemComplete(ele, data) {
     // 获取前一个元素的内容
     var curValue = ele.dataset.id;
-    for (var index in data) {
-        if (data[index].id == curValue) {
-            data[index].completed = !data[index].completed;
+    $.ajax({
+        type: "POST",
+        url: "update_data.php",
+        data: {
+            type: "single",
+            delId: curValue,
+            userid: getCookie('userid')
+        },
+        success: function(){
+            for (var index in data) {
+                if (data[index].id == curValue) {
+                    data[index].completed = !data[index].completed;
+                }
+            }
+        },
+        error: function (event,request, settings) {
+            console.log(event);
+            console.log(request);
+            console.log(settings);
         }
-    }
+    });
 }
 
 // 添加元素
 function addItem(value) {
-    todoItems.push({
-        id: tempNum,
-        todo: value,
-        completed: false
+    $.ajax({
+        type: "POST",
+        url: "addItem.php",
+        data: {
+            userid: userid,
+            todo: value,
+            completed: 0
+        },
+        dataType: "json",
+        success: function(data){
+            todoItems = data;
+            renderDate(todoItems);
+        },
+        error: function (event,request, settings) {
+            console.log(event);
+            console.log(request);
+            console.log(settings);
+        }
     });
-    renderDate(todoItems);
-    console.log(todoItems);
-    tempNum++;
 }
 
 // 删除元素
@@ -272,16 +363,33 @@ function delItem(ele, data) {
     // 获取前一个元素的内容
     var curValue = ele.target.previousSibling.dataset.id;
 
-    for (var index = 0; index < todoItems.length; index++) {
-        if (todoItems[index].id == curValue) {
-            console.log("index:" + index);
-            var temp = todoItems.splice(index, 1); // 删除对应的元素
-            console.log(temp);
-        }
-    }
 
-    // 删除元素
-    ele.target.parentElement.parentElement.remove();
+    $.ajax({
+        type: "POST",
+        url: "delete_data.php",
+        data: {
+            type: "delSingle",
+            itemid: curValue,
+            userid: getCookie('userid')
+        },
+        success: function(){
+            for (var index = 0; index < todoItems.length; index++) {
+                if (todoItems[index].id == curValue) {
+                    console.log("index:" + index);
+                    var temp = todoItems.splice(index, 1); // 删除对应的元素
+                    console.log(temp);
+                }
+            }
+            // 删除元素
+            ele.target.parentElement.parentElement.remove();
+            countList();
+        },
+        error: function (event,request, settings) {
+            console.log(event);
+            console.log(request);
+            console.log(settings);
+        }
+    });
 }
 
 //  是否 勾选所有项目
@@ -289,29 +397,46 @@ var isChecked = false;
 
 function itemDone() {
     var toggles = document.querySelectorAll(".toggle");
-    for (var i = 0; i < toggles.length; i++) {
-        if (!isChecked) {
-            toggles[i].checked = true;
-            removeClass(toggles[i].parentNode.parentNode, "finished");
-            addClass(toggles[i].parentNode.parentNode, "finished");
-            // 将所有项目标为完成
-            for (var index in todoItems) {
-                todoItems[index].completed = true;
+    $.ajax({
+        type: "POST",
+        url: "update_data.php",
+        data: {
+            type: "all",
+            userid: getCookie('userid')
+        },
+        success: function(){
+            for (var i = 0; i < toggles.length; i++) {
+                if (!isChecked) {
+                    toggles[i].checked = true;
+                    removeClass(toggles[i].parentNode.parentNode, "finished");
+                    addClass(toggles[i].parentNode.parentNode, "finished");
+                    // 将所有项目标为完成
+                    for (var index in todoItems) {
+                        todoItems[index].completed = true;
+                    }
+                } else {
+                    toggles[i].checked = false;
+                    removeClass(toggles[i].parentNode.parentNode, "finished");
+                    for (var index in todoItems) {
+                        todoItems[index].completed = false;
+                    }
+                }
             }
-        } else {
-            toggles[i].checked = false;
-            removeClass(toggles[i].parentNode.parentNode, "finished");
-            for (var index in todoItems) {
-                todoItems[index].completed = false;
-            }
+            isChecked = !isChecked;
+        },
+        error: function (event,request, settings) {
+            console.log(event);
+            console.log(request);
+            console.log(settings);
         }
-    }
-    isChecked = !isChecked;
+    });
+
     countList();
 }
 
 // 渲染数据
 function renderDate(data) {
+    var data = data || todoItems;
     var htmlOpt = "";
     for (var index=0;index<data.length; index++) {
         var isFinished = "";
@@ -324,26 +449,21 @@ function renderDate(data) {
             isFinished = "";
             isCompleted = "";
         }
-        htmlOpt += '<li class="todo' + isFinished + '"><div class="view">' + '<input class="toggle" type="checkbox" ' + isCompleted + '>' + '<label data-id="' + data[index].id + '">' + data[index].todo + '</label>' + '<button class="destroy"></button>' + '</div><input class="edit" type="text"></li>';
+        htmlOpt += '<li class="todo' + isFinished + '"><div class="view">' + '<input class="toggle" type="checkbox" ' + isCompleted + '>' + '<label data-id="' + data[index].id + '">' + data[index].value + '</label>' + '<button class="destroy"></button>' + '</div><input class="edit" type="text"></li>';
     }
     todo_list.innerHTML = htmlOpt;
-}
-
-// 初始化，从数据库中获取数据
-function init() {
     countList();
 }
 
+// 初始化，从数据库中获取数据
+var userid = 0;
+function init() {
+    userid = getCookie('userid');
+    getDate();
+    renderDate()
+    countList();
+
+
+}
+
 init();
-
-
-
-// var date = [1,2,3,4,1,2,3,8,9];
-// var tempArr = [];
-// for(var i=0; i<date.length; i++) {
-//     if(tempArr.indexOf(date[i]) == -1) {
-//          tempArr.push(date[i])
-//     }
-// }
-// console.log(tempArr);
-//

@@ -1,4 +1,4 @@
-<?php 
+<?php
 function filled_out($form_vars) {
   // test that each variable has a value
   foreach ($form_vars as $key => $value) {
@@ -11,7 +11,7 @@ function filled_out($form_vars) {
 
 function valid_username($username) {
   // check an email address is possibly valid
-  if (ereg('^[a-zA-z][a-zA-Z0-9_]{1,17}$', $username)) {
+  if (ereg('^[a-zA-z][a-zA-Z0-9_]{1,16}$', $username)) {
     return true;
   } else {
     return false;
