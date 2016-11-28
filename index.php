@@ -1,14 +1,11 @@
 <?php
 session_start();
-// session_start();
-//
-// if(isset($_SESSION['valid_user'])) {
-//     echo 'user is ' . $_SESSION['valid_user'];
-// } else {
-//     echo '<script>window.location.href = "./login.html"</script>';
-// }
-//
-// echo '';
+
+
+if(!isset($_SESSION['valid_user'])) {
+    echo '<script>window.location.href = "./login.html"</script>';
+}
+
 ?>
 <!DOCTYPE html>
 <html>
